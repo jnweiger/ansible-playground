@@ -2,13 +2,13 @@
 - hosts: all
   name: Fabtop Install Play
   tasks:
-  - name: add ppa
+  - name: add inkscape ppa
     apt_repository: 
       repo: 'ppa:inkscape.dev/stable-1.1'
       state: present
       update-cache: true
 
-  - name: install package
+  - name: install inkscape package
     become: true
     become_user: root
     apt:
