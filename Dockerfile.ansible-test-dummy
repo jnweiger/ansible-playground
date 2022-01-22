@@ -1,0 +1,12 @@
+# Run a docker container, so that ansible can exercise deployments easily
+# Most insecure. Testing only.
+FROM ubuntu:20.04
+
+RUN apt update 
+RUN apt -y install openssh-server
+RUN echo "PermitRootLogin      yes" >> /etc/ssh/sshd_config
+RUN echo "PermitEmptyPasswords yes" >> /etc/ssh/sshd_config
+## remove the password, so that ssh behaves as if we had an ssh-key
+RUN passwd -d root
+
+CMD bash -c '/etc/init.d/ssh start; while true; do sleep 60; done'

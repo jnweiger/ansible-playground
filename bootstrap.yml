@@ -1,0 +1,16 @@
+---
+- hosts: all
+  name: Bootstrap Play
+  tasks:
+  - name: Bootstrap Ansible
+    raw: apt-get install -y python-simplejson python3-apt
+
+  - name: Bootstrap Packaging
+    become: true
+    become_user: root
+    apt:
+      state: present
+      name: 
+        - gnupg				# needed for apt-key
+        # - software-properties-common	# needed for apt-add-repository
+
