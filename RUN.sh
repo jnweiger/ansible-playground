@@ -1,4 +1,5 @@
 #! /bin/sh
+# Study https://docs.ansible.com/ansible/latest/network/getting_started/first_inventory.html#basic-inventory
 
 bash docker-test-dummy.sh
 ipaddr=$(docker inspect ansible-test-dummy -f "{{ .NetworkSettings.IPAddress }}")
