@@ -3,6 +3,8 @@
   name: Bootstrap Play
   tasks:
   - name: Bootstrap Ansible
+    # python-simplejson was mentioned in an ansible bootstrap tutorial.
+    # python3-apt is actually needed for proper ansible operation later.
     raw: apt-get install -y python-simplejson python3-apt
 
   - name: Bootstrap Packaging
@@ -12,5 +14,6 @@
       state: present
       name: 
         - gnupg				# needed for apt-key
+        - apt-utils			# mentioned in 'debconf: delaying package configuration, since apt-utils is not installed'
         # - software-properties-common	# needed for apt-add-repository
 

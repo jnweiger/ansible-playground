@@ -1,6 +1,7 @@
 # Run a docker container, so that ansible can exercise deployments easily
 # Most insecure. Testing only.
-FROM ubuntu:20.04
+FROM linuxmintd/mint20.3-amd64:latest
+#FROM ubuntu:20.04
 
 RUN apt update 
 RUN apt -y install openssh-server

@@ -1,20 +1,48 @@
 ---
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
+# https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_facts_module.html
+
 - hosts: all
   name: Fabtop Install Play
   tasks:
+
+  ## huch, anybody still using python2 here???, hope not.
+  - name: Set the ansible_python_interpreter fact
+    set_fact:
+      ansible_python_interpreter: "/usr/bin/python3"
+
+  - name: make Linux Mint 20.x look like Ubuntu focal
+    set_fact:
+      ansible_distribution_release: "focal"
+    when: ansible_distribution == "Linux Mint" and ansible_distribution_major_version == "20"
+
   - name: add inkscape ppa
+    become: true
+    become_user: root
     apt_repository: 
-      repo: 'ppa:inkscape.dev/stable-1.1'
       state: present
-      update-cache: true
+      repo: 'ppa:inkscape.dev/stable-1.1'
+      codename: "{{ ansible_distribution_release }}"		# avoid 'una' in the repo file.
+      update-cache: true				# true explodes on mint when distribution_release is the original VERSION_CODENAME
 
   - name: install inkscape package
     become: true
     become_user: root
     apt:
+      update_cache: false	# never use true here, it explodes on mint, due to ansible bug
       state: present
       name:
-        - inkscape
+        - inkscape=1:1.1*	# we must specify the '1:' epoch thing with the version number. That is silly.
+
+  - name: re-gather package facts
+    ansible.builtin.package_facts:
+      manager: auto
+
+  - name: check inkscape version on {{ ansible_facts['distribution'] }}
+    ansible.builtin.debug:
+      msg: "{{ ansible_facts.packages['inkscape'].0.version }} from {{ ansible_facts.packages['inkscape'].0.origin }}"
+    when: "'inkscape' in ansible_facts.packages"
+
 
     
 
