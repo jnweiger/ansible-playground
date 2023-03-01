@@ -43,6 +43,15 @@
       msg: "{{ ansible_facts.packages['inkscape'].0.version }} from {{ ansible_facts.packages['inkscape'].0.origin }}"
     when: "'inkscape' in ansible_facts.packages"
 
+  - name: install extensions from github
+    debug:
+      msg: "{{ item.2 }} from https://github.com/{{ item.0 }}/archive/refs/{{ item.1 }}.tar.gz"
+    loop:
+      - [ "jnweiger/inkscape-round-corners", "tags/v1.5", "round-corners-1.5" ]
+      - [ "jnweiger/inkscape-round-corners", "tags/v1.5", "round-corners-1.5" ]
+      - [ "jnweiger/inkscape-gears-dev", "heads/master", "inkscape-gears-dev-master" ]
 
     
+# wget  https://github.com/jnweiger/inkscape-gears-dev/archive/refs/heads/master.tar.gz
+# wget  https://github.com/jnweiger/inkscape-round-corners/archive/refs/tags/v1.5.tar.gz -O - | sudo tar xz -C /usr/share/inkscape/extensions
 
