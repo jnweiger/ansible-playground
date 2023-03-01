@@ -2,8 +2,10 @@
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/apt_module.html
 # https://docs.ansible.com/ansible/latest/collections/ansible/builtin/package_facts_module.html
 
-- hosts: all
-  name: Fabtop Install Play
+- name: Fabtop Install Play
+  hosts: all
+  become: true
+  become_user: root
   tasks:
 
   ## huch, anybody still using python2 here???, hope not.
@@ -11,45 +13,55 @@
     set_fact:
       ansible_python_interpreter: "/usr/bin/python3"
 
+  # Each task can only have one action statement. like set_fact or debug msg, but not both.
+  # To do so, we use block: to list multiple actions in one task.
+  # the example below has on unconditional debug msg, followed by another (conditional!) block in the parent block.
   - name: make Linux Mint 20.x look like Ubuntu focal
-    set_fact:
-      ansible_distribution_release: "focal"
-    when: ansible_distribution == "Linux Mint" and ansible_distribution_major_version == "20"
+    block:
+      - debug:
+          msg: "This OS is {{ ansible_distribution }} {{ ansible_distribution_major_version }}"
+      - block:
+          - set_fact:
+              ansible_distribution_release: "focal"
+          - debug:
+              msg: " -> using ubuntu release {{ ansible_distribution_release }}"
+        when: ansible_distribution == "Linux Mint" and ansible_distribution_major_version == "20"
+
 
   - name: add inkscape ppa
-    become: true
-    become_user: root
     apt_repository: 
       state: present
       repo: 'ppa:inkscape.dev/stable-1.1'
       codename: "{{ ansible_distribution_release }}"		# avoid 'una' in the repo file.
       update-cache: true				# true explodes on mint when distribution_release is the original VERSION_CODENAME
 
-  - name: install inkscape package
-    become: true
-    become_user: root
-    apt:
-      update_cache: false	# never use true here, it explodes on mint, due to ansible bug
-      state: present
-      name:
-        - inkscape=1:1.1*	# we must specify the '1:' epoch thing with the version number. That is silly.
-
-  - name: re-gather package facts
-    ansible.builtin.package_facts:
-      manager: auto
-
-  - name: check inkscape version on {{ ansible_facts['distribution'] }}
-    ansible.builtin.debug:
-      msg: "{{ ansible_facts.packages['inkscape'].0.version }} from {{ ansible_facts.packages['inkscape'].0.origin }}"
-    when: "'inkscape' in ansible_facts.packages"
+#  - name: install inkscape package
+#    apt:
+#      update_cache: false	# never use true here, it explodes on mint, due to ansible bug
+#      state: present
+#      name:
+#        - inkscape=1:1.1*	# we must specify the '1:' epoch thing with the version number. That is silly.
+#
+#  - name: re-gather package facts
+#    # this prints an huge json struct, when run with -v
+#    ansible.builtin.package_facts:
+#      manager: auto
+#
+#  - name: check inkscape version on {{ ansible_facts['distribution'] }}
+#    ansible.builtin.debug:
+#      msg: "{{ ansible_facts.packages['inkscape'].0.version }} from {{ ansible_facts.packages['inkscape'].0.origin }}"
+#    when: "'inkscape' in ansible_facts.packages"
 
   - name: install extensions from github
-    debug:
-      msg: "{{ item.2 }} from https://github.com/{{ item.0 }}/archive/refs/{{ item.1 }}.tar.gz"
+    # echo statements from the shell do not appear anywhere without -v
+    shell: |-
+      echo "{{ item.2 }} from https://github.com/{{ item.0 }}/archive/refs/{{ item.1 }}.tar.gz"
+    register: extension_install
     loop:
-      - [ "jnweiger/inkscape-round-corners", "tags/v1.5", "round-corners-1.5" ]
-      - [ "jnweiger/inkscape-round-corners", "tags/v1.5", "round-corners-1.5" ]
-      - [ "jnweiger/inkscape-gears-dev", "heads/master", "inkscape-gears-dev-master" ]
+     - [ "jnweiger/inkscape-round-corners", "tags/v1.5", "round-corners-1.5" ]
+     - [ "jnweiger/inkscape-round-corners", "tags/v1.5", "round-corners-1.5" ]
+     - [ "jnweiger/inkscape-gears-dev", "heads/master", "inkscape-gears-dev-master" ]
+  - debug: var=extension_install.results
 
     
 # wget  https://github.com/jnweiger/inkscape-gears-dev/archive/refs/heads/master.tar.gz

@@ -1,6 +1,8 @@
 ---
-- hosts: all
-  name: Bootstrap Play
+- name: Bootstrap Play
+  hosts: all
+  become: true
+  become_user: root
   tasks:
   - name: Bootstrap Ansible
     # python-simplejson was mentioned in an ansible bootstrap tutorial.
@@ -8,8 +10,6 @@
     raw: apt-get install -y python-simplejson python3-apt
 
   - name: Bootstrap Packaging
-    become: true
-    become_user: root
     apt:
       state: present
       name: 
