@@ -1,0 +1,28 @@
+---
+# Requires: 
+#  ansible-galaxy collection install hetzner.hcloud
+
+- name: Create Hetzner Cloud Server
+  hosts: localhost
+  connection: local
+  gather_facts: no
+
+  tasks:
+    - name: Create a basic server with ssh key
+      hcloud_server:
+        # api_token: "...."         # or use env var HCLOUD_TOKEN
+        name: jw-ansible-deployed
+        server_type: cx11
+        image: ubuntu-22.04
+        location: fsn1
+        ssh_keys:
+          - jw@owncloud.com             # known in QA project
+        # enable_ipv6: false            # huch, unsupported parameter??
+        state: started
+      register: server
+    
+    - debug: var=server
+
+    - name: Print server IP address
+      debug:
+        var: server.hcloud_server.ipv4_address
