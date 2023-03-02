@@ -1,6 +1,12 @@
 ---
 # Requires: 
 #  ansible-galaxy collection install hetzner.hcloud
+#
+# References:
+# - https://docs.ansible.com/ansible/latest/collections/hetzner/hcloud/hcloud_server_module.html
+# - https://github.com/ansible-collections/hetzner.hcloud
+# - https://docs.hetzner.cloud/#servers-create-a-server
+# - https://community.hetzner.com/tutorials/basic-cloud-config
 
 - name: Create Hetzner Cloud Server
   hosts: localhost
@@ -18,8 +24,9 @@
         ssh_keys:
           - jw@owncloud.com             # known in QA project
         # enable_ipv6: false            # huch, unsupported parameter??
-        state: started
-      register: server
+        user_data: "#cloud-config\nruncmd:\n- touch /root/cloud-init-worked\n- uname -a\n- uname -a > /tmp/cloud-config.out"        # Cloud-Init user data. max 32KiB.
+        state: started                  # started: create server, absent: remove the server
+      register: server                  # stdout/stderr of cloud-init is not captured.
     
     - debug: var=server
 
